@@ -1,6 +1,7 @@
 import 'package:chatezy/widgets/custom_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import './login_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,7 +13,6 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: DecoratedBox(
@@ -39,10 +39,7 @@ class _LoginPageState extends State<LoginPage> {
           vertical: 20.0,
         ),
         child: Column(
-          children: [
-            _headerText(),
-            _loginForm()
-          ],
+          children: [_headerText(), _loginForm()],
         ),
       ),
     );
@@ -83,18 +80,41 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _loginForm() {
-    return Container(
-      height: MediaQuery.sizeOf(context).height * 0.40,
-      margin: EdgeInsets.symmetric(
-        vertical: MediaQuery.sizeOf(context).height * 0.05,
+  return Container(
+    height: MediaQuery.sizeOf(context).height * 0.40,
+    margin: EdgeInsets.symmetric(
+      vertical: MediaQuery.sizeOf(context).height * 0.05,
+    ),
+    child: Form(
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Theme(
+            data: Theme.of(context).copyWith(
+              inputDecorationTheme: InputDecorationTheme(
+                hintStyle: TextStyle(color: Colors.white),
+              ),
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: 40),
+                CustomFormField(
+                  height: MediaQuery.sizeOf(context).height*0.1,
+                  hintText: "E-mail",
+                ),
+                SizedBox(height: 50), // Add vertical space
+                CustomFormField(
+                  height: MediaQuery.sizeOf(context).height*0.1,
+                  hintText: "Passcode",
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-      child: Form(
-        child: Column(
-          children: [
-            CustomFormField(),
-          ],
-        ),
-      ),
-    );
-  }
+    ),
+  );
+}
 }

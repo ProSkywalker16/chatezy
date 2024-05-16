@@ -1,3 +1,4 @@
+import 'package:chatezy/consts.dart';
 import 'package:chatezy/widgets/custom_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,6 +12,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+
+  final GlobalKey<FormState> _loginFormKey = GlobalKey();
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,7 +44,11 @@ class _LoginPageState extends State<LoginPage> {
           vertical: 20.0,
         ),
         child: Column(
-          children: [_headerText(), _loginForm()],
+          children: [
+            _headerText(),
+            _loginForm(),
+            _createAnAccountLink(),
+          ],
         ),
       ),
     );
@@ -80,41 +89,102 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _loginForm() {
-  return Container(
-    height: MediaQuery.sizeOf(context).height * 0.40,
-    margin: EdgeInsets.symmetric(
-      vertical: MediaQuery.sizeOf(context).height * 0.05,
-    ),
-    child: Form(
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Theme(
-            data: Theme.of(context).copyWith(
-              inputDecorationTheme: InputDecorationTheme(
-                hintStyle: TextStyle(color: Colors.white),
+    return Container(
+      height: MediaQuery.sizeOf(context).height * 0.40,
+      margin: EdgeInsets.symmetric(
+        vertical: MediaQuery.sizeOf(context).height * 0.05,
+      ),
+      child: SingleChildScrollView(
+        child: Form(
+          key:_loginFormKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Theme(
+                data: Theme.of(context).copyWith(
+                  inputDecorationTheme: InputDecorationTheme(
+                    hintStyle: TextStyle(color: Colors.white),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 40),
+                    CustomFormField(
+                      height: MediaQuery.sizeOf(context).height * 0.1,
+                      hintText: "E-mail",
+                      validationRegEx: EMAIL_VALIDATION_REGEX,
+                    ),
+                    SizedBox(height: 40), // Add vertical space
+                    CustomFormField(
+                      height: MediaQuery.sizeOf(context).height * 0.1,
+                      hintText: "Password",
+                      validationRegEx: PASSWORD_VALIDATION_REGEX,
+                    ),
+                    SizedBox(height: 40),
+                    _loginButton(),
+                  ],
+                ),
               ),
-            ),
-            child: Column(
-              children: [
-                SizedBox(height: 40),
-                CustomFormField(
-                  height: MediaQuery.sizeOf(context).height*0.1,
-                  hintText: "E-mail",
-                ),
-                SizedBox(height: 50), // Add vertical space
-                CustomFormField(
-                  height: MediaQuery.sizeOf(context).height*0.1,
-                  hintText: "Passcode",
-                ),
-              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _loginButton() {
+    return SizedBox(
+      width: MediaQuery.sizeOf(context).width,
+      height: 50,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: MaterialButton(
+          onPressed: () {
+            if(_loginFormKey.currentState?.validate() ?? false){
+              print("hehe lol");
+            }
+          },
+          color: Color.fromARGB(255, 252, 180, 85),
+          child: const Text(
+            "Login",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _createAnAccountLink() {
+    return Center(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            "Don't have an account?",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color.fromARGB(255, 255, 243, 25),
+            ),
+          ),
+          Text(
+            " Sign Up",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              color: Color.fromARGB(255, 252, 252, 252),
+            ),
+          )
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 }

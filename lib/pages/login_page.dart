@@ -1,5 +1,6 @@
 import 'package:chatezy/consts.dart';
 import 'package:chatezy/services/auth_service.dart';
+import 'package:chatezy/services/navigation_service.dart';
 import 'package:chatezy/widgets/custom_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,6 +20,8 @@ class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _loginFormKey = GlobalKey();
 
   late AuthService _authService;
+  late NavigationService _navigationService;
+
 
 
   String? email, password;
@@ -28,6 +31,7 @@ class _LoginPageState extends State<LoginPage> {
     
     super.initState();
     _authService = _getIt.get<AuthService>();
+    _navigationService = _getIt.get<NavigationService>();
   }
   @override
   Widget build(BuildContext context) {
@@ -173,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
               print(result);
               if(result)
               {
-                print(result);
+                _navigationService.pushReplacementNamed('/home');
               }else{
 
               }

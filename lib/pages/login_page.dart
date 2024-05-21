@@ -1,4 +1,5 @@
 import 'package:chatezy/consts.dart';
+import 'package:chatezy/services/alert_service.dart';
 import 'package:chatezy/services/auth_service.dart';
 import 'package:chatezy/services/navigation_service.dart';
 import 'package:chatezy/widgets/custom_form_field.dart';
@@ -21,18 +22,18 @@ class _LoginPageState extends State<LoginPage> {
 
   late AuthService _authService;
   late NavigationService _navigationService;
-
-
+  late AlertService _alertService;
 
   String? email, password;
 
   @override
   void initState() {
-    
     super.initState();
     _authService = _getIt.get<AuthService>();
     _navigationService = _getIt.get<NavigationService>();
+    _alertService = _getIt.get<AlertService>();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,7 +114,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       child: SingleChildScrollView(
         child: Form(
-          key:_loginFormKey,
+          key: _loginFormKey,
           child: Column(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -132,9 +133,9 @@ class _LoginPageState extends State<LoginPage> {
                       height: MediaQuery.sizeOf(context).height * 0.1,
                       hintText: "E-mail",
                       validationRegEx: EMAIL_VALIDATION_REGEX,
-                      onSaved: (value){
+                      onSaved: (value) {
                         setState(() {
-                          email=value;
+                          email = value;
                         });
                       },
                     ),
@@ -144,13 +145,13 @@ class _LoginPageState extends State<LoginPage> {
                       hintText: "Password",
                       validationRegEx: PASSWORD_VALIDATION_REGEX,
                       obscureText: true,
-                      onSaved: (value){
+                      onSaved: (value) {
                         setState(() {
-                          password=value;
+                          password = value;
                         });
                       },
                     ),
-                    
+
                     SizedBox(height: 40),
                     _loginButton(),
                   ],
@@ -171,17 +172,18 @@ class _LoginPageState extends State<LoginPage> {
         borderRadius: BorderRadius.circular(20),
         child: MaterialButton(
           onPressed: () async {
-            if(_loginFormKey.currentState?.validate() ?? false){
+            if (_loginFormKey.currentState?.validate() ?? false) {
               _loginFormKey.currentState?.save();
               bool result = await _authService.login(email!, password!);
               print(result);
-              if(result)
-              {
+              if (result) {
                 _navigationService.pushReplacementNamed('/home');
-              }else{
-
+              } else {
+                _alertService.showToast(
+                  text: "Failed to login, please try again!",
+                  icon: Icons.error,
+                );
               }
-              
             }
           },
           color: Color.fromARGB(255, 252, 180, 85),

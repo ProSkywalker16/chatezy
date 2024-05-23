@@ -215,12 +215,17 @@ class _LoginPageState extends State<LoginPage> {
               color: Color.fromARGB(255, 255, 243, 25),
             ),
           ),
-          Text(
-            " Sign Up",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              color: Color.fromARGB(255, 252, 252, 252),
+          GestureDetector(
+            onTap:(){
+              _navigationService.pushReplacementNamed('/register');
+            },
+            child: Text(
+              " Sign Up",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                color: Color.fromARGB(255, 252, 252, 252),
+              ),
             ),
           )
         ],

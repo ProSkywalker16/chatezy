@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:chatezy/consts.dart';
+import 'package:chatezy/services/auth_service.dart';
 import 'package:chatezy/services/media_service.dart';
 import 'package:chatezy/services/navigation_service.dart';
+import 'package:chatezy/services/storage_service.dart';
 import 'package:chatezy/widgets/custom_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -17,18 +19,24 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final GetIt _getIt = GetIt.instance;
+  final GlobalKey<FormState> _registerFormKey = GlobalKey<FormState>();
+  late AuthService _authService;
   late MediaService _mediaService;
   late NavigationService _navigationService;
+  late StorageService _storageService;
   String? email, password, name;
+  File? selectedImage;
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _mediaService = _getIt.get<MediaService>();
     _navigationService = _getIt.get<NavigationService>();
+    _authService = _getIt.get<AuthService>();
+    _storageService = _getIt.get<StorageService>();
   }
 
-  File? selectedImage;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,10 +67,14 @@ class _RegisterPageState extends State<RegisterPage> {
         child: Column(
           children: [
             _headerText(),
-            SingleChildScrollView(
-              child: _registerForm(),
-            ),
-             _LoginAccountLink(),
+            if (!isLoading) SingleChildScrollView(child: _registerForm()),
+            if (!isLoading) _LoginAccountLink(),
+            if (isLoading)
+              const Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
           ],
         ),
       ),
@@ -72,7 +84,6 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _headerText() {
     return SizedBox(
       width: MediaQuery.sizeOf(context).width,
-      //height: MediaQuery.sizeOf(context).height,
       child: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -109,6 +120,7 @@ class _RegisterPageState extends State<RegisterPage> {
         vertical: MediaQuery.sizeOf(context).height * 0.05,
       ),
       child: Form(
+        key: _registerFormKey,
         child: Column(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -117,34 +129,38 @@ class _RegisterPageState extends State<RegisterPage> {
             _pfpSelectionField(),
             SizedBox(height: 20),
             CustomFormField(
-                hintText: "Name",
-                height: MediaQuery.sizeOf(context).height * 0.1,
-                validationRegEx: NAME_VALIDATION_REGEX,
-                onSaved: (value) {
-                  setState(() {
-                    name = value;
-                  });
-                }),
+              hintText: "Name",
+              height: MediaQuery.sizeOf(context).height * 0.1,
+              validationRegEx: NAME_VALIDATION_REGEX,
+              onSaved: (value) {
+                setState(() {
+                  name = value;
+                });
+              },
+            ),
             CustomFormField(
-                hintText: "E-mail",
-                height: MediaQuery.sizeOf(context).height * 0.1,
-                validationRegEx: EMAIL_VALIDATION_REGEX,
-                onSaved: (value) {
-                  setState(() {
-                    email = value;
-                  });
-                }),
+              hintText: "E-mail",
+              height: MediaQuery.sizeOf(context).height * 0.1,
+              validationRegEx: EMAIL_VALIDATION_REGEX,
+              onSaved: (value) {
+                setState(() {
+                  email = value;
+                });
+              },
+            ),
             CustomFormField(
-                hintText: "Password",
-                height: MediaQuery.sizeOf(context).height * 0.1,
-                validationRegEx: PASSWORD_VALIDATION_REGEX,
-                onSaved: (value) {
-                  setState(() {
-                    password = value;
-                  });
-                }),
+              hintText: "Password",
+              height: MediaQuery.sizeOf(context).height * 0.1,
+              validationRegEx: PASSWORD_VALIDATION_REGEX,
+              obscureText: true,
+              onSaved: (value) {
+                setState(() {
+                  password = value;
+                });
+              },
+            ),
             SizedBox(height: 20),
-            _registerButton()
+            _registerButton(),
           ],
         ),
       ),
@@ -179,7 +195,33 @@ class _RegisterPageState extends State<RegisterPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        onPressed: () {},
+        onPressed: () async {
+          setState(() {
+            isLoading = true;
+          });
+          try {
+            if (_registerFormKey.currentState?.validate() ??
+                false && selectedImage != null) {
+              _registerFormKey.currentState?.save();
+              bool result = await _authService.signup(email!, password!);
+              if (result) {
+                // Handle successful registration
+                String? pfpURL = await _storageService.uploadUserPfp(
+                  file: selectedImage!,
+                  uid: _authService.user!.uid,
+                );
+                // print("registered succesfully");
+              } else {
+                print("registration failed");
+              }
+            }
+          } catch (e) {
+            print(e);
+          }
+          setState(() {
+            isLoading = false;
+          });
+        },
         child: const Text(
           "SignUP",
           style: TextStyle(
@@ -204,11 +246,11 @@ class _RegisterPageState extends State<RegisterPage> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color:Color.fromARGB(255, 252, 252, 252),
+              color: Color.fromARGB(255, 252, 252, 252),
             ),
           ),
           GestureDetector(
-            onTap:(){
+            onTap: () {
               _navigationService.pushReplacementNamed('/login');
             },
             child: Text(
@@ -216,10 +258,10 @@ class _RegisterPageState extends State<RegisterPage> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w900,
-                color:  Color.fromARGB(255, 255, 243, 25),
+                color: Color.fromARGB(255, 255, 243, 25),
               ),
             ),
-          )
+          ),
         ],
       ),
     );

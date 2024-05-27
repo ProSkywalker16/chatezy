@@ -28,8 +28,6 @@ class AuthService {
     return false;
   }
 
-  
-
   Future<bool> signup(String email, String password) async {
     try {
       final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -59,5 +57,20 @@ class AuthService {
 
   void authStateChangesStreamListener(User? user) {
     _user = user;
+  }
+
+  Future<bool> isEmailInUse(String email) async {
+    try {
+      await _firebaseAuth.fetchSignInMethodsForEmail(email);
+      return true; // Email is in use
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'firebase_auth/email-not-found') {
+        return false; // Email is not in use
+      } else {
+        print(e);
+        
+        return true; // Email is in use or unknown error
+      }
+    }
   }
 }

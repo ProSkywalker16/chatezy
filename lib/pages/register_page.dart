@@ -207,10 +207,19 @@ class _RegisterPageState extends State<RegisterPage> {
           isLoading = true;
         });
         try {
-          if (_registerFormKey.currentState?.validate() ?? false && selectedImage != null) {
+          if (_registerFormKey.currentState?.validate() ?? false) {
+            if (selectedImage == null) {
+              throw Exception("Please select a profile picture");
+            }
             _registerFormKey.currentState?.save();
             bool result = await _authService.signup(email!, password!);
             if (result) {
+              // Check if the email is already in use
+              bool emailAlreadyInUse = await _authService.isEmailInUse(email!);
+              if (emailAlreadyInUse) {
+                throw Exception("Email already in use");
+                
+              }
               // Handle successful registration
               String? pfpURL = await _storageService.uploadUserPfp(
                 file: selectedImage!,
@@ -228,13 +237,24 @@ class _RegisterPageState extends State<RegisterPage> {
                   text: "User Registered Successfully",
                   icon: Icons.check,
                 );
+                _navigationService.pushReplacementNamed("/login");
+                _navigationService.pushReplacementNamed("/home");
+              } else {
+                throw Exception("Unable to upload user pfp!");
               }
               // print("registered successfully");
+            } else {
+              throw Exception("Unable to register user!");
             }
           }
         } catch (e) {
           print(e);
+          _alertService.showToast(
+            text: "Registration failed, \n $e",
+            icon: Icons.error,
+          );
         }
+
         setState(() {
           isLoading = false;
         });

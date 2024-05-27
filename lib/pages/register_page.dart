@@ -1,7 +1,10 @@
 import 'dart:io';
 
 import 'package:chatezy/consts.dart';
+import 'package:chatezy/models/user_profile.dart';
+import 'package:chatezy/services/alert_service.dart';
 import 'package:chatezy/services/auth_service.dart';
+import 'package:chatezy/services/database_service.dart';
 import 'package:chatezy/services/media_service.dart';
 import 'package:chatezy/services/navigation_service.dart';
 import 'package:chatezy/services/storage_service.dart';
@@ -24,6 +27,8 @@ class _RegisterPageState extends State<RegisterPage> {
   late MediaService _mediaService;
   late NavigationService _navigationService;
   late StorageService _storageService;
+  late DatabaseService _databaseService;
+  late AlertService _alertService;
   String? email, password, name;
   File? selectedImage;
   bool isLoading = false;
@@ -35,6 +40,8 @@ class _RegisterPageState extends State<RegisterPage> {
     _navigationService = _getIt.get<NavigationService>();
     _authService = _getIt.get<AuthService>();
     _storageService = _getIt.get<StorageService>();
+    _databaseService = _getIt.get<DatabaseService>();
+    _alertService = _getIt.get<AlertService>();
   }
 
   @override
@@ -186,53 +193,63 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _registerButton() {
-    return SizedBox(
-      height: 45,
-      width: MediaQuery.sizeOf(context).width,
-      child: MaterialButton(
-        color: Color.fromARGB(255, 252, 180, 85),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        onPressed: () async {
-          setState(() {
-            isLoading = true;
-          });
-          try {
-            if (_registerFormKey.currentState?.validate() ??
-                false && selectedImage != null) {
-              _registerFormKey.currentState?.save();
-              bool result = await _authService.signup(email!, password!);
-              if (result) {
-                // Handle successful registration
-                String? pfpURL = await _storageService.uploadUserPfp(
-                  file: selectedImage!,
-                  uid: _authService.user!.uid,
+ Widget _registerButton() {
+  return SizedBox(
+    height: 45,
+    width: MediaQuery.of(context).size.width,
+    child: MaterialButton(
+      color: Color.fromARGB(255, 252, 180, 85),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      onPressed: () async {
+        setState(() {
+          isLoading = true;
+        });
+        try {
+          if (_registerFormKey.currentState?.validate() ?? false && selectedImage != null) {
+            _registerFormKey.currentState?.save();
+            bool result = await _authService.signup(email!, password!);
+            if (result) {
+              // Handle successful registration
+              String? pfpURL = await _storageService.uploadUserPfp(
+                file: selectedImage!,
+                uid: _authService.user!.uid,
+              );
+              if (pfpURL != null) {
+                await _databaseService.createUserProfile(
+                  userProfile: UserProfile(
+                    uid: _authService.user!.uid,
+                    name: name,
+                    pfpURL: pfpURL,
+                  ),
                 );
-                // print("registered succesfully");
-              } else {
-                print("registration failed");
+                _alertService.showToast(
+                  text: "User Registered Successfully",
+                  icon: Icons.check,
+                );
               }
+              // print("registered successfully");
             }
-          } catch (e) {
-            print(e);
           }
-          setState(() {
-            isLoading = false;
-          });
-        },
-        child: const Text(
-          "SignUP",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 21,
-            fontWeight: FontWeight.w900,
-          ),
+        } catch (e) {
+          print(e);
+        }
+        setState(() {
+          isLoading = false;
+        });
+      },
+      child: const Text(
+        "SignUP",
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 21,
+          fontWeight: FontWeight.w900,
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _LoginAccountLink() {
     return Center(

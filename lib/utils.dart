@@ -1,6 +1,7 @@
 import 'package:chatezy/firebase_options.dart';
 import 'package:chatezy/services/alert_service.dart';
 import 'package:chatezy/services/auth_service.dart';
+import 'package:chatezy/services/database_service.dart';
 import 'package:chatezy/services/media_service.dart';
 import 'package:chatezy/services/navigation_service.dart';
 import 'package:chatezy/services/storage_service.dart';
@@ -31,5 +32,9 @@ Future<void> registerServices() async {
 
   getIt.registerSingleton<StorageService>(
     StorageService(),
+  );
+
+  getIt.registerSingleton<DatabaseService>(
+    DatabaseService(),
   );
 }

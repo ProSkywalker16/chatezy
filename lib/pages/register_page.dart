@@ -212,14 +212,16 @@ class _RegisterPageState extends State<RegisterPage> {
               throw Exception("Please select a profile picture");
             }
             _registerFormKey.currentState?.save();
+
+            // Check if the email is already in use
+            /*bool emailAlreadyInUse = await _authService.isEmailInUse(email!);
+            if (emailAlreadyInUse) {
+              throw Exception("Email already in use");
+            }*/
+            
+            // Create the user account
             bool result = await _authService.signup(email!, password!);
             if (result) {
-              // Check if the email is already in use
-              bool emailAlreadyInUse = await _authService.isEmailInUse(email!);
-              if (emailAlreadyInUse) {
-                throw Exception("Email already in use");
-                
-              }
               // Handle successful registration
               String? pfpURL = await _storageService.uploadUserPfp(
                 file: selectedImage!,

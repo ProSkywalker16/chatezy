@@ -218,7 +218,7 @@ class _RegisterPageState extends State<RegisterPage> {
             if (emailAlreadyInUse) {
               throw Exception("Email already in use");
             }*/
-            
+
             // Create the user account
             bool result = await _authService.signup(email!, password!);
             if (result) {
@@ -240,7 +240,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   icon: Icons.check,
                 );
                 _navigationService.pushReplacementNamed("/login");
-                _navigationService.pushReplacementNamed("/home");
+                //_navigationService.pushReplacementNamed("/home");
               } else {
                 throw Exception("Unable to upload user pfp!");
               }

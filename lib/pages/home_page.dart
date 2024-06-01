@@ -1,6 +1,9 @@
+import 'package:chatezy/models/user_profile.dart';
 import 'package:chatezy/services/alert_service.dart';
 import 'package:chatezy/services/auth_service.dart';
+import 'package:chatezy/services/database_service.dart';
 import 'package:chatezy/services/navigation_service.dart';
+import 'package:chatezy/widgets/chat_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
@@ -12,48 +15,126 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   final GetIt _getIt = GetIt.instance;
   late AuthService _authService;
   late NavigationService _navigationService;
   late AlertService _alertService;
+  late DatabaseService _databaseService;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _authService = _getIt.get<AuthService>();
     _navigationService = _getIt.get<NavigationService>();
     _alertService = _getIt.get<AlertService>();
+    _databaseService = _getIt.get<DatabaseService>();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Center(
-          child: const Text(
-            "Messages",
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color.fromARGB(255, 225, 226, 234),
+              Color.fromARGB(255, 107, 235, 235),
+            ],
           ),
         ),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              bool result = await _authService.logout();
-              if(result){
-                _alertService.showToast(
-                  text: "Logged Out!",
-                  icon: Icons.check_circle,
-                );
-                _navigationService.pushReplacementNamed('/login');
-              }
-            },
-            color: Colors.red,
-            icon: const Icon(
-              Icons.logout,
+        child: _buildUI(),
+      ),
+    );
+  }
+
+  Widget _buildUI() {
+    return SafeArea(
+      child: Column(
+        children: [
+          _header(),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 15.0,
+                vertical: 20.0,
+              ),
+              child: _chatsList(),
             ),
-          )
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _header() {
+    return AppBar(
+      title: Center(
+        child: Text(
+          "Messages",
+          style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0)), // changed here
+        ),
+      ),
+      actions: [
+        IconButton(
+          onPressed: () async {
+            bool result = await _authService.logout();
+            if (result) {
+              _alertService.showToast(
+                text: "Logged Out!",
+                icon: Icons.check_circle,
+              );
+              _navigationService.pushReplacementNamed('/login');
+            }
+          },
+          color: Colors.red,
+          icon: Icon(
+            Icons.logout,
+            color: Color.fromARGB(255, 255, 0, 0), // changed here
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _chatsList() {
+    return StreamBuilder(
+      stream: _databaseService.getUSerProfiles(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              "Unable to load data",
+              style: TextStyle(color: Colors.white), // changed here
+            ),
+          );
+        }
+        print(snapshot.data);
+        if (snapshot.hasData && snapshot.data!= null) {
+          final users = snapshot.data!.docs;
+          return ListView.builder(
+            itemCount: users.length,
+            itemBuilder: ((context, index) {
+              UserProfile user = users[index].data();
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10.0,
+                ),
+                child: ChatTile(
+                  userProfile: user,
+                  onTap: () {},
+                ),
+              );
+            }),
+          );
+        }
+        return Center(
+          child: CircularProgressIndicator(
+            color: Colors.white, // changed here
+          ),
+        );
+      },
     );
   }
 }

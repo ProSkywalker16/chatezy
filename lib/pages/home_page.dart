@@ -73,7 +73,8 @@ class _HomePageState extends State<HomePage> {
       title: Center(
         child: Text(
           "Messages",
-          style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0)), // changed here
+          style: TextStyle(
+              color: const Color.fromARGB(255, 0, 0, 0)), // changed here
         ),
       ),
       actions: [
@@ -111,7 +112,7 @@ class _HomePageState extends State<HomePage> {
           );
         }
         print(snapshot.data);
-        if (snapshot.hasData && snapshot.data!= null) {
+        if (snapshot.hasData && snapshot.data != null) {
           final users = snapshot.data!.docs;
           return ListView.builder(
             itemCount: users.length,
@@ -123,7 +124,13 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: ChatTile(
                   userProfile: user,
-                  onTap: () {},
+                  onTap: () async {
+                    final chatExists = await _databaseService.checkChatExists(
+                      _authService.user!.uid,
+                      user.uid!,
+                    );
+                    print(chatExists);
+                  },
                 ),
               );
             }),

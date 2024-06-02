@@ -1,4 +1,5 @@
 import 'package:chatezy/models/user_profile.dart';
+import 'package:chatezy/pages/chat_page.dart';
 import 'package:chatezy/services/alert_service.dart';
 import 'package:chatezy/services/auth_service.dart';
 import 'package:chatezy/services/database_service.dart';
@@ -63,6 +64,7 @@ class _HomePageState extends State<HomePage> {
               child: _chatsList(),
             ),
           ),
+          Text('Made By Promit Chaudhuri'), // added this line
         ],
       ),
     );
@@ -70,10 +72,14 @@ class _HomePageState extends State<HomePage> {
 
   Widget _header() {
     return AppBar(
+      backgroundColor: Color.fromARGB(255, 211, 232, 230),
       title: Center(
         child: Text(
           "Messages",
-          style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0)), // changed here
+          style: TextStyle(
+              color: Color.fromARGB(255, 44, 74, 220),
+              fontWeight: FontWeight.w900),
+           // changed here
         ),
       ),
       actions: [
@@ -123,7 +129,27 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: ChatTile(
                   userProfile: user,
-                  onTap: () {},
+                  onTap: () async {
+                    final chatExists = await _databaseService.checkChatExists(
+                      _authService.user!.uid,
+                      user.uid!,
+                    );
+                    if (!chatExists) {
+                      await _databaseService.createNewChat(
+                        _authService.user!.uid,
+                        user.uid!,
+                      );
+                    }
+                    _navigationService.push(
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return ChatPage(
+                            chatUser: user,
+                          );
+                        },
+                      ),
+                    );
+                  },
                 ),
               );
             }),
